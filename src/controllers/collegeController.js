@@ -1,10 +1,12 @@
 const collegeModel=require("../models/collegeModel") 
-const { modelName } = require("../models/internModel")
+
 const internModel=require("../models/internModel") 
 
 const isValidRequestBody = (requestBody) => {
 
-    return Object.entries(requestBody).length > 0
+    return Object.entries(requestBody).length > 0 //Object.entries() returns an array whose elements are arrays
+                                                 // corresponding to the enumerable string-keyed property [key, value] pairs
+                                                 // found directly upon object. 
   
   }
   const isValid = (value) => {
@@ -17,6 +19,7 @@ const isValidRequestBody = (requestBody) => {
     }
     return true
   }
+
 const createCollege= async function(req,res){
     try{
         let requestBody = req.body;
@@ -33,13 +36,25 @@ const createCollege= async function(req,res){
           res.status(400).send({ Status: false, message: "full name is required" })
           return
         }
+        const upperCaseFullName=requestBody.fullName
+
+        let newStringFullName=convertFirstLetterToUpperCase(upperCaseFullName)
+        function convertFirstLetterToUpperCase(upperCaseFullName) {
+          var  splitStr= upperCaseFullName.toLowerCase().split(' ');
+          for (var i = 0; i < splitStr.length; i++) {
+              splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);    
+          }
+         
+          return splitStr.join(' ');
+        }
         if (!isValid(logoLink)) {
             res.status(400).send({ Status: false, message: "logo link is required" })
             return
           }
     
         const newCollege = await collegeModel.create(requestBody);
-        res.status(201).send({ status: true,  data: newCollege })
+        const savedData= {name:newCollege.name,fullName:newStringFullName, logoLink:newCollege.logoLink}
+        res.status(201).send({ status: true,  data: savedData }) //201 successfuly connected 200 ok
       } catch (err) {
         res.status(500).send( { Status: false, message: err.message } )
       }
@@ -79,7 +94,7 @@ const createCollege= async function(req,res){
           interns.push(result)
         }
         collegeData["intrests"] = interns
-        console.log(collegeData)
+        //console.log(collegeData)
         res.status(200).send({ status: true, data: collegeData })
       }
       catch (error) {

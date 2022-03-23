@@ -1,6 +1,6 @@
 const internModel=require("../models/internModel")
 const collegeModel=require("../models/collegeModel") 
-
+const ObjectId= require("mongoose").Types.ObjectId
 const isValidRequestBody = (requestBody) => {
 
     return Object.entries(requestBody).length > 0
@@ -33,7 +33,7 @@ const isValidRequestBody = (requestBody) => {
                 return res.status(400).send({ status: false, message: "email is required" })
                      }
 
-            if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(email))) {      //check trim is working or not
+            if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(email.trim()))) {      //check trim is working or not
 
                 return res.status(400).send({ status: false, message: 'Email should be a valid email address' })
             }
@@ -52,9 +52,18 @@ const isValidRequestBody = (requestBody) => {
                 return res.status(400).send({ status: false, message: `Mobile Number is not valid` })
             }
 
+            if (!ObjectId.isValid(intern.collegeId)) { return res.status(400).send({ status: false, msg: "Please provide a valid College Id" }) }
+           
+            let duplicateMobile=await internModel.findOne({mobile});
+            if(duplicateMobile)
+             {
+              return res.status(400).send({status:false, msg: "Mobile is already in use"})
+               }
+
         
               let collegeId = req.body.collegeId
               let college = await collegeModel.findById(collegeId)
+
               if(!college){
                  res.status(400).send({status : false, msg:"No Such college is Present,Please check collegeId"})}
               
